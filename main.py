@@ -27,7 +27,7 @@ frame = array1[1].astype(np.float32)
 
 substracted = frame - background
 
-fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+fig, axes = plt.subplots(1, 4, figsize=(10, 5))
 axes[0].imshow(frame, cmap='gray', vmin=0, vmax=255)
 axes[0].set_title('Original Frame')
 axes[0].axis('off')
@@ -39,6 +39,19 @@ axes[1].axis('off')
 axes[2].imshow(substracted, cmap='gray', vmin=0, vmax=255)
 axes[2].set_title('Subtracted')
 axes[2].axis('off')
+
+features = tp.locate(substracted, 7)
+axes[3].imshow(substracted, cmap="gray", vmin=0, vmax=255)
+axes[3].scatter(
+    features["x"],
+    features["y"],
+    s=40,
+    facecolors="none",
+    edgecolors="red",
+    linewidths=1,
+)
+axes[3].set_title("Detected particles")
+axes[3].axis("off")
 
 plt.tight_layout()
 plt.show()
