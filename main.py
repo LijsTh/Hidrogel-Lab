@@ -20,42 +20,59 @@ frames2 = pims.open(PATH_10FPS)
 """
 
 
-array1 = np.where(np.array(frames1) < 30,215, 0)
+frames = np.where(np.array(frames1) < 30,215, 0)
 
-background = array1[-1].astype(np.float32)
-frame = array1[1].astype(np.float32)
+background = frames[-1].astype(np.float32)
+frames = [f.astype(np.float32) for f in frames]
+# frame_1 = frames[1].astype(np.float32)
 
-substracted = frame - background
-
-fig, axes = plt.subplots(1, 4, figsize=(10, 5))
-axes[0].imshow(frame, cmap='gray', vmin=0, vmax=255)
+fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+axes[0].imshow(frames[1], cmap='gray', vmin=0, vmax=255)
 axes[0].set_title('Original Frame')
 axes[0].axis('off')
+
 
 axes[1].imshow(background, cmap='gray', vmin=0, vmax=255)
 axes[1].set_title('Background')
 axes[1].axis('off')
 
-axes[2].imshow(substracted, cmap='gray', vmin=0, vmax=255)
+# substracted = frame_1 - background
+frames_substracted = [f - background for f in frames]
+axes[2].imshow(frames_substracted[1], cmap='gray', vmin=0, vmax=255)
 axes[2].set_title('Subtracted')
 axes[2].axis('off')
 
-features = tp.locate(substracted, 7)
-axes[3].imshow(substracted, cmap="gray", vmin=0, vmax=255)
-axes[3].scatter(
-    features["x"],
-    features["y"],
-    s=40,
-    facecolors="none",
-    edgecolors="red",
-    linewidths=1,
-)
-axes[3].set_title("Detected particles")
-axes[3].axis("off")
+# features = tp.locate(substracted, 7)
+# axes[3].imshow(substracted, cmap="gray", vmin=0, vmax=255)
+# axes[3].scatter(
+#     features["x"],
+#     features["y"],
+#     s=40,
+#     facecolors="none",
+#     edgecolors="red",
+#     linewidths=1,
+# )
+# axes[3].set_title("Detected particles")
+# axes[3].axis("off")
 
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
+tp.quiet()
+features = tp.batch(frames, 9, minmass=500)
+features = features[
+    ( features['x'] > 3) &
+    ( features['x'] < 460) &
+    ( features['y'] > -5.44736842105*features['x'] + 2603.10526316) & 
+    ( features['ecc'] < 0.8)
+]    
+# print(features.describe())
+t = tp.link(features, 5, memory=3)
+t = tp.filter_stubs(t, 25)
+tp.plot_traj(t)
 
+print(t.head())
+print(t.columns)
+print(t[t.particle == 0])
 """
 =================================================
             REGIONS OF INTEREST EXTRACTION
@@ -71,11 +88,11 @@ plt.show()
 PIXELS_PER_MM = 1.4 # PONELE QUE ESTO LO HICE CON LA REGLA EN FIJI, SOS LIBRE JOACO DE VERIFICAR 
 
 # The y-coordinate (in pixels) of the bottom reference point
-BOTTOM_REF_Y_PX = substracted.shape[0] 
+BOTTOM_REF_Y_PX = frames_substracted[0].shape[0] 
 
 # 1. Setup the figure
 fig, ax = plt.subplots(figsize=(6, 10))
-ax.imshow(substracted, cmap='gray', vmin=0, vmax=255)
+ax.imshow(frames_substracted[0], cmap='gray', vmin=0, vmax=255)
 ax.set_title('Verifying ROI Cuts')
 
 # 2. Define a function to draw the boxes
@@ -110,7 +127,7 @@ def draw_roi_box(ax, bottom_offset_mm, height_mm, px_per_mm, y_ref_px, width_px,
     ax.text(10, y_top_idx - 10, label, color=color, fontsize=10, weight='bold')
 
 # 3. Draw the three boxes
-image_width = substracted.shape[1]
+image_width = frames_substracted[0].shape[1]
 
 draw_roi_box(ax, 10, 30, PIXELS_PER_MM, BOTTOM_REF_Y_PX, image_width)
 draw_roi_box(ax, 160, 30, PIXELS_PER_MM, BOTTOM_REF_Y_PX, image_width)
