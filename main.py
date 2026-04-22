@@ -70,9 +70,21 @@ particles_with_enough_y_movement = particles_delta[particles_delta[("y", "max")]
 t = t[t.particle.isin(particles_with_enough_y_movement.index)]
 tp.plot_traj(t)
 
+t.reset_index(drop=True, inplace=True)
+velocities_per_trayectory = []
+for p in t.particle.unique():
+    p_trayectory = t[t.particle == p].sort_values(by='frame')
+    p_trayectory["velocity_y"] = p_trayectory.y.shift(1) - p_trayectory.y
+    p_trayectory["velocity_x"] = p_trayectory.x.shift(1) - p_trayectory.x
+    # print(p_trayectory[["x", "y", "velocity_y", "velocity_x"]])
+    # break
+    velocities_per_trayectory.append(p_trayectory[["x", "y", "velocity_y", "velocity_x"]])
+
+
+'''
 """
 =================================================
-            REGIONS OF INTEREST EXTRACTION
+            REGIONm OF INTEREST EXTRACTION
 =================================================
 """
 
@@ -142,3 +154,4 @@ plt.show()
                     TRACKPY
 ================================================
 """
+'''
