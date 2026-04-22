@@ -43,7 +43,7 @@ axes[2].set_title("Subtracted")
 axes[2].axis("off")
 
 tp.quiet()
-features = tp.batch(frames, 9, minmass=500) 
+features = tp.batch(frames_substracted, 9, minmass=500) 
 #features = features[features.y < 5 * (features.x + 30)]
 #features = features[features.y < 30]
 # # Borde izquierdo
