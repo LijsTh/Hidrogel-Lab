@@ -1,3 +1,4 @@
-# python 
-.venv 
+# python
+.venv
 *.tif
+data/

@@ -1,10 +1,8 @@
-from matplotlib import pyplot as plt
-import matplotlib.patches as patches
-import trackpy as tp
-from skimage import io
+import numpy as np
 import pandas as pd
 import pims
-import numpy as np
+import trackpy as tp
+from matplotlib import pyplot as plt
 
 # .tif
 PATH_2FPS = "2fps.tif"
@@ -38,14 +36,15 @@ axes[1].axis("off")
 
 # substracted = frame_1 - background
 frames_substracted = [f - background for f in frames]
+frames_substracted = np.clip(frames_substracted, 0, 255).astype(np.uint8)
 axes[2].imshow(frames_substracted[1], cmap="gray", vmin=0, vmax=255)
 axes[2].set_title("Subtracted")
 axes[2].axis("off")
 
 tp.quiet()
-features = tp.batch(frames_substracted, 9, minmass=500) 
-#features = features[features.y < 5 * (features.x + 30)]
-#features = features[features.y < 30]
+features = tp.batch(frames_substracted, 9, minmass=500)
+# features = features[features.y < 5 * (features.x + 30)]
+# features = features[features.y < 30]
 # # Borde izquierdo
 # img_h, img_w = frames_substracted[1].shape[:2]
 # x_line = np.array([0, min(img_h - 1, (img_w - 1) // 2)])
@@ -60,26 +59,39 @@ features = tp.batch(frames_substracted, 9, minmass=500)
 # #Filter the features below this line
 # # features = features[features.y < 5 * (features.x + 30)]
 # # print(features.describe())
-t = tp.link(features, 5, memory=3)  
-t = tp.filter_stubs(t, 10) 
-#tp.plot_traj(t)
+t = tp.link(features, 5, memory=3)
+t = tp.filter_stubs(t, 10)
+# tp.plot_traj(t)
 
-print(t.columns)
 particles_delta = t.groupby("particle").aggregate({"y": ["max", "min"]})
-particles_with_enough_y_movement = particles_delta[particles_delta[("y", "max")] - particles_delta[("y", "min")] > 30]
+particles_with_enough_y_movement = particles_delta[
+    particles_delta[("y", "max")] - particles_delta[("y", "min")] > 30
+]
 t = t[t.particle.isin(particles_with_enough_y_movement.index)]
-tp.plot_traj(t)
+# tp.plot_traj(t)
 
 t.reset_index(drop=True, inplace=True)
 velocities_per_trayectory = []
 for p in t.particle.unique():
-    p_trayectory = t[t.particle == p].sort_values(by='frame')
+    p_trayectory = t[t.particle == p].sort_values(by="frame")
     p_trayectory["velocity_y"] = p_trayectory.y.shift(1) - p_trayectory.y
     p_trayectory["velocity_x"] = p_trayectory.x.shift(1) - p_trayectory.x
-    # print(p_trayectory[["x", "y", "velocity_y", "velocity_x"]])
-    # break
-    velocities_per_trayectory.append(p_trayectory[["x", "y", "velocity_y", "velocity_x"]])
+    velocities_per_trayectory.append(
+        p_trayectory[["x", "y", "velocity_y", "velocity_x", "frame"]]
+    )
 
+
+def get_velocity_field_at_frame(velocities_per_trayectory, frame):
+    alto = 1024
+    ancho = 472
+
+
+frames = t.frame.unique()
+velocities = pd.concat(velocities_per_trayectory)
+print(velocities.columns)
+for f in frames:
+    velocities[velocities.frame == f].to_csv(f"data/velocities_{f}.csv", index=False)
+# velocity_field_per_frame = [get_velocity_field_at_frame(velocities_per_trayectory, f) for f in tqdm(frames[100:101])]
 
 '''
 """
