@@ -29,13 +29,6 @@ def to_vector_field(df):
     return np.stack((Px.to_numpy(), Py.to_numpy()), axis=-1)
 
 
-# def smooth_vector_field(P, kernel_size=3):
-#     kernel = np.ones((kernel_size, kernel_size)) / (kernel_size**2)
-#     Px_smooth = convolve2d(P[:, :, 0], kernel, mode="same")
-#     Py_smooth = convolve2d(P[:, :, 1], kernel, mode="same")
-
-#     return np.stack((Px_smooth, Py_smooth), axis=-1)
-
 
 def plot_vector_field(P):
     if P.shape[-1] != 2:
@@ -58,7 +51,7 @@ def plot_vector_field(P):
 
 def main():
     filenames = []
-    for i in tqdm(range(1200)):
+    for i in tqdm(range(1219)):
         frame = pd.read_csv(f"data/velocities_{i}.csv")
         P = to_vector_field(frame)
         plot_vector_field(P)
@@ -66,14 +59,6 @@ def main():
         filenames.append(filename)
         plt.savefig(filename, dpi=150, bbox_inches="tight")
         plt.close()  # Important: close the figure to free memory
-
-    fourcc = cv2.VideoWriter.fourcc(*"mp4v")
-    videowriter = cv2.VideoWriter("output_video.mp4", fourcc, 2, (472, 1200))
-    for file in filenames:
-        frame = cv2.imread(file)
-        videowriter.write(frame)
-        # imageio.get_writer("output_video.mp4", "mp4", images, fps=2)  # Adjust fps as needed
-    videowriter.release()
 
 
 if __name__ == "__main__":

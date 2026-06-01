@@ -8,6 +8,7 @@ dependencies = [
     "matplotlib>=3.10.8",
     "numpy>=2.4.3",
     "opencv-python>=4.13.0.92",
+    "openpiv>=0.25.4",
     "pandas>=3.0.1",
     "pims>=0.7",
     "scikit-image>=0.26.0",
