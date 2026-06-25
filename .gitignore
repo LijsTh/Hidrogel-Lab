@@ -3,3 +3,4 @@
 *.tif
 data/
 frames/
+.ipynb_checkpoints
