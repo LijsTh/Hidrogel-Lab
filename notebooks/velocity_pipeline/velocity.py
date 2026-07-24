@@ -44,8 +44,8 @@ def extract_velocity_field(vel):
     ny_bins = len(y_bins) - 1
 
     
-    vel['x_bin'] = pd.cut(t['x'], bins=x_bins, labels=False)
-    vel['y_bin'] = pd.cut(t['y'], bins=y_bins, labels=False)
+    vel['x_bin'] = pd.cut(vel['x'], bins=x_bins, labels=False)
+    vel['y_bin'] = pd.cut(vel['y'], bins=y_bins, labels=False)
 
 
 
